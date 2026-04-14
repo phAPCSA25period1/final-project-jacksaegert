@@ -24,6 +24,15 @@ public class Grid {
     public Tile getTile (int row, int col) {
         return this.grid[row][col];
     }
+
+    public int getRows() {
+        return this.grid.length;
+    }
+
+    public int getCols() {
+        return this.grid[0].length;
+    }
+
     //Setters
     public void setTile (int row, int col, Tile newTile) {
         this.grid[row][col] = newTile;
