@@ -57,15 +57,16 @@ public class App {
             MazeCarver carver = new MazeCarver();
             carver.carveMaze(grid);
 
-            // Display maze with ASCII art
+            //Clear, then display maze via ascii
+            System.out.println("\033[H\033[2J");
             System.out.println("\nGenerated Maze (" + size + "x" + size + "):");
             for (int r = 0; r < grid.getRows(); r++) {
                 for (int c = 0; c < grid.getCols(); c++) {
                     TileType type = grid.getTile(r, c).getTileType();
                     if (type == TileType.PATH) {
-                        System.out.print(" ");
+                        System.out.print("  ");
                     } else {
-                        System.out.print("#");
+                        System.out.print("# ");
                     }
                 }
                 System.out.println();
