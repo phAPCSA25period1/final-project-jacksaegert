@@ -1,10 +1,8 @@
-import java.util.Random;
 import java.util.Scanner;
 
 public class App {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        Random random = new Random();
 
         //If the laws of math end, the program will automatically end itself as a convinience for the user.
         // Or a cosmic ray flip this particular bit. Either or, it burns a tiny bit of performance. Hooray!
