@@ -8,7 +8,7 @@ public class App {
         // Or a cosmic ray flip this particular bit. Either or, it burns a tiny bit of performance. Hooray!
         while (1 == 1) {
             System.out.println("\n=== Maze Game ===");
-            System.out.println("1. 9x9");
+            System.out.println("1. 11x11");
             System.out.println("2. 13x13");
             System.out.println("3. 15x15");
             System.out.println("4. Custom size");
@@ -20,7 +20,7 @@ public class App {
 
             switch (choice) {
                 case "1":
-                    size = 9;
+                    size = 11;
                     break;
                 case "2":
                     size = 13;
