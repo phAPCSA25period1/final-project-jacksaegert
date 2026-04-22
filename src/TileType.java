@@ -1,1 +1,1 @@
-public enum TileType {WALL, PATH}
+public enum TileType {WALL, PATH, TARGET}
