@@ -1,37 +1,54 @@
 public class Player {
-    //Instance Vars
-    private int pRow;
-    private int pCol;
+    private int row;
+    private int col;
+    private Grid grid;
 
-    public Player() {
-        this.pRow = 1;
-        this.pCol = 1;
+    public Player(Grid grid, int startRow, int startCol) {
+        this.grid = grid;
+        this.row = startRow;
+        this.col = startCol;
     }
 
-    //Getters
     public int getRow() {
-        return pRow;
+        return row;
     }
 
     public int getCol() {
-        return pCol;
+        return col;
     }
 
-    //Convinience Methods
-    public void goUp() {
-        this.pRow++;
+    public boolean moveUp() {
+        return move(-1, 0);
     }
 
-    public void goDown() {
-        this.pRow--;
+    public boolean moveDown() {
+        return move(1, 0);
     }
 
-    public void goRight() {
-        this.pCol++;
+    public boolean moveLeft() {
+        return move(0, -1);
     }
 
-    public void goLeft() {
-        this.pCol--;
+    public boolean moveRight() {
+        return move(0, 1);
     }
 
+    private boolean move(int dRow, int dCol) {
+        int newRow = row + dRow;
+        int newCol = col + dCol;
+
+        if (isValidMove(newRow, newCol)) {
+            row = newRow;
+            col = newCol;
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isValidMove(int r, int c) {
+        if (r < 0 || r >= grid.getRows() || c < 0 || c >= grid.getCols()) {
+            return false;
+        }
+        return grid.getTile(r, c).getTileType() == TileType.PATH;
+    }
 }
