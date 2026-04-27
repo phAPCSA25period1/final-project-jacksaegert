@@ -49,6 +49,10 @@ public class Player {
         if (r < 0 || r >= grid.getRows() || c < 0 || c >= grid.getCols()) {
             return false;
         }
-        return grid.getTile(r, c).getTileType() == TileType.PATH;
+        return grid.getTile(r, c).getTileType() != TileType.WALL;
+    }
+
+    public boolean checkWin() {
+        return (grid.getTile(row, col).getTileType() == TileType.TARGET);
     }
 }

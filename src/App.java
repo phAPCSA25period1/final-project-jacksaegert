@@ -4,11 +4,9 @@ public class App {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        // If the laws of math end, the program will automatically end itself as a
-        // convinience for the user.
-        // Or a cosmic ray flip this particular bit. Either or, it burns a tiny bit of
-        // performance. Hooray!
-        while (1 == 1) {
+        //If the laws of math end, the program will automatically end itself as a convinience for the user.
+        // Or a cosmic ray flip this particular bit. Either or, it burns a tiny bit of performance. Hooray!
+        while (true) {
             System.out.println("\n=== Maze Game ===");
             System.out.println("1. 11x11");
             System.out.println("2. 13x13");
@@ -57,7 +55,7 @@ public class App {
             MazeCarver carver = new MazeCarver();
             carver.carveMaze(grid);
 
-            // Clear, then display maze via ascii
+            // Initial display
             System.out.println("\033[H\033[2J");
             System.out.println("\nGenerated Maze (" + size + "x" + size + "):");
             for (int r = 0; r < grid.getRows(); r++) {
@@ -71,6 +69,15 @@ public class App {
                 }
                 System.out.println();
             }
+
+            // Player and movement initialization
+            Player player = new Player(grid, 1, 1);
+            MovementEngine engine = new MovementEngine();
+            System.out.println("Player at (1,1). Use WASD to move (focus console), Q to quit movement.");
+            engine.startNavigation(grid, player);
+
+            System.out.println("Congratulations! You Win! \n");
+
 
             System.out.print("\nGenerate another? (y/n): ");
             if (!scanner.nextLine().trim().toLowerCase().startsWith("y")) {

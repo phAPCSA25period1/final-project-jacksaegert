@@ -11,6 +11,7 @@ import javax.swing.SwingUtilities;
 
 public class MovementEngine implements KeyListener {
     private volatile boolean listening;
+    private boolean rendering;
     private JFrame frame;
     private Grid grid;
     private Player player;
@@ -86,6 +87,10 @@ public class MovementEngine implements KeyListener {
         int keyCode = e.getKeyCode();
         boolean moved = false;
 
+        if (rendering) {
+            return;
+        }
+
         switch (keyCode) {
             case KeyEvent.VK_W:
                 moved = player.moveUp();
@@ -108,6 +113,9 @@ public class MovementEngine implements KeyListener {
             clearScreen();
             render();
         }
+        if(player.checkWin()) {
+            stopListening();
+        }
     }
 
     @Override
@@ -119,6 +127,7 @@ public class MovementEngine implements KeyListener {
     }
 
     private void render() {
+        rendering = true;
         for (int r = 0; r < grid.getRows(); r++) {
             for (int c = 0; c < grid.getCols(); c++) {
                 if (r == player.getRow() && c == player.getCol()) {
@@ -127,13 +136,16 @@ public class MovementEngine implements KeyListener {
                     TileType type = grid.getTile(r, c).getTileType();
                     if (type == TileType.PATH) {
                         System.out.print("  ");
-                    } else {
+                    } else if (type == TileType.WALL) {
                         System.out.print("# ");
+                    } else {
+                        System.out.print("+ ");
                     }
                 }
             }
             System.out.println();
         }
+        rendering = false;
     }
 
     private void clearScreen() {
