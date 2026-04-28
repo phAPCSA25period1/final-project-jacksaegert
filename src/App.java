@@ -1,11 +1,26 @@
 import java.util.Scanner;
 
+/**
+ * The main entry point for the Maze Game application.
+ * <p>
+ * This class handles the user menu, maze generation, and game loop.
+ * It allows the user to select a maze size, generates a maze using
+ * recursive backtracking, and starts the movement engine for gameplay.
+ */
 public class App {
+
+    /**
+     * The main method that runs the Maze Game.
+     * <p>
+     * Presents a menu for selecting maze dimensions, generates a maze,
+     * initializes the player and movement engine, and handles replay logic.
+     *
+     * @param args command-line arguments (not used)
+     */
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        //If the laws of math end, the program will automatically end itself as a convinience for the user.
-        // Or a cosmic ray flip this particular bit. Either or, it burns a tiny bit of performance. Hooray!
+        // Infinite loop for the game menu; exits via return statements when the user chooses to quit.
         while (true) {
             System.out.println("\n=== Maze Game ===");
             System.out.println("1. 11x11");
@@ -18,6 +33,7 @@ public class App {
             String choice = scanner.nextLine();
             int size = 0;
 
+            // Determine maze size based on user menu selection.
             switch (choice) {
                 case "1":
                     size = 11;
@@ -32,6 +48,7 @@ public class App {
                     System.out.print("Enter size (odd number recommended): ");
                     try {
                         size = Integer.parseInt(scanner.nextLine().trim());
+                        // Ensure odd dimensions for proper maze generation.
                         if (size % 2 == 0) {
                             System.out.println("Making size odd for proper maze generation.");
                             size++;
@@ -50,12 +67,12 @@ public class App {
                     continue;
             }
 
-            // Generate maze
+            // Generate the maze grid and carve paths using DFS.
             Grid grid = new Grid(size, size);
             MazeCarver carver = new MazeCarver();
             carver.carveMaze(grid);
 
-            // Initial display
+            // Initial display: print the generated maze to the console.
             System.out.println("\033[H\033[2J");
             System.out.println("\nGenerated Maze (" + size + "x" + size + "):");
             for (int r = 0; r < grid.getRows(); r++) {
@@ -70,15 +87,13 @@ public class App {
                 System.out.println();
             }
 
-            // Player and movement initialization
+            // Initialize the player at the starting position and start the movement engine.
             Player player = new Player(grid, 1, 1);
             MovementEngine engine = new MovementEngine();
             System.out.println("Player at (1,1). Use WASD to move (focus console), Q to quit movement.");
             engine.startNavigation(grid, player);
 
-            System.out.println("Congratulations! You Win! \n");
-
-
+            // Ask the user if they want to generate another maze.
             System.out.print("\nGenerate another? (y/n): ");
             if (!scanner.nextLine().trim().toLowerCase().startsWith("y")) {
                 System.out.println("Goodbye!");
@@ -88,3 +103,4 @@ public class App {
         }
     }
 }
+

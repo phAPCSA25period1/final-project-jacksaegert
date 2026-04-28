@@ -9,22 +9,50 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
+/**
+ * Handles keyboard input and real-time console rendering for player movement.
+ * <p>
+ * This class creates a Swing window to capture key events (WASD for movement, Q to quit)
+ * and updates the console display to reflect the player's current position in the maze.
+ */
 public class MovementEngine implements KeyListener {
+
+    /** Flag indicating whether the engine is actively listening for key input. */
     private volatile boolean listening;
+
+    /** Flag to prevent concurrent rendering of the maze. */
     private boolean rendering;
+
+    /** The Swing frame used to capture keyboard focus. */
     private JFrame frame;
+
+    /** Reference to the maze grid. */
     private Grid grid;
+
+    /** Reference to the player whose movement is being controlled. */
     private Player player;
 
+    /**
+     * Constructs a new MovementEngine with listening initially disabled.
+     */
     public MovementEngine() {
         this.listening = false;
     }
 
+    /**
+     * Starts the navigation loop, opening a Swing window for key input and rendering the maze.
+     * <p>
+     * This method blocks until the user quits movement (by pressing Q or closing the window).
+     *
+     * @param grid   the {@link Grid} representing the current maze
+     * @param player the {@link Player} object to control
+     */
     public void startNavigation(Grid grid, Player player) {
         this.grid = grid;
         this.player = player;
         this.listening = true;
 
+        // Create and display a Swing window to capture keyboard input.
         SwingUtilities.invokeLater(() -> {
             frame = new JFrame("Maze Controls");
             frame.setSize(400, 200);
@@ -41,6 +69,7 @@ public class MovementEngine implements KeyListener {
             frame.setVisible(true);
             panel.requestFocusInWindow();
 
+            // Stop listening when the window is closed.
             frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
@@ -48,6 +77,7 @@ public class MovementEngine implements KeyListener {
                 }
             });
 
+            // Regain keyboard focus when the window receives focus.
             frame.addWindowFocusListener(new WindowAdapter() {
                 @Override
                 public void windowGainedFocus(WindowEvent e) {
@@ -56,9 +86,11 @@ public class MovementEngine implements KeyListener {
             });
         });
 
+        // Initial render of the maze.
         clearScreen();
         render();
 
+        // Block until the user quits movement.
         try {
             while (listening) {
                 Thread.sleep(50);
@@ -67,6 +99,7 @@ public class MovementEngine implements KeyListener {
             Thread.currentThread().interrupt();
         }
 
+        // Dispose of the Swing window on the event dispatch thread.
         SwingUtilities.invokeLater(() -> {
             if (frame != null) {
                 frame.dispose();
@@ -74,23 +107,41 @@ public class MovementEngine implements KeyListener {
         });
     }
 
+    /**
+     * Signals the engine to stop listening for keyboard input.
+     */
     public void stopListening() {
         listening = false;
     }
 
+    /**
+     * Returns whether the engine is currently listening for input.
+     *
+     * @return true if listening, false otherwise
+     */
     public boolean isListening() {
         return listening;
     }
 
+    /**
+     * Handles key press events for player movement and quitting.
+     * <p>
+     * WASD moves the player in the corresponding direction. Q quits movement.
+     * The maze is re-rendered to the console after each valid move.
+     *
+     * @param e the KeyEvent triggered by a key press
+     */
     @Override
     public void keyPressed(KeyEvent e) {
         int keyCode = e.getKeyCode();
         boolean moved = false;
 
+        // Ignore input while the maze is being rendered to prevent glitches.
         if (rendering) {
             return;
         }
 
+        // Map key presses to player movement or quit action.
         switch (keyCode) {
             case KeyEvent.VK_W:
                 moved = player.moveUp();
@@ -109,23 +160,42 @@ public class MovementEngine implements KeyListener {
                 return;
         }
 
+        // Re-render the maze if the player successfully moved.
         if (moved) {
             clearScreen();
             render();
         }
-        if(player.checkWin()) {
+
+        // Check for win condition after each move.
+        if (player.checkWin()) {
+            System.out.println("Congratulations! You Win! \n");
             stopListening();
         }
     }
 
+    /**
+     * Unused key release handler required by the KeyListener interface.
+     *
+     * @param e the KeyEvent triggered by a key release
+     */
     @Override
     public void keyReleased(KeyEvent e) {
     }
 
+    /**
+     * Unused key typed handler required by the KeyListener interface.
+     *
+     * @param e the KeyEvent triggered by a key type
+     */
     @Override
     public void keyTyped(KeyEvent e) {
     }
 
+    /**
+     * Renders the current state of the maze to the console.
+     * <p>
+     * The player is displayed as '@', paths as spaces, walls as '#', and the target as '+'.
+     */
     private void render() {
         rendering = true;
         for (int r = 0; r < grid.getRows(); r++) {
@@ -148,8 +218,12 @@ public class MovementEngine implements KeyListener {
         rendering = false;
     }
 
+    /**
+     * Clears the console screen using ANSI escape codes.
+     */
     private void clearScreen() {
         System.out.print("\033[H\033[2J");
         System.out.flush();
     }
 }
+
