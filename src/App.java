@@ -31,7 +31,7 @@ public class App {
             System.out.print("Choose option: ");
 
             String choice = scanner.nextLine();
-            int size = 0;
+            int size;
 
             // Determine maze size based on user menu selection.
             switch (choice) {
