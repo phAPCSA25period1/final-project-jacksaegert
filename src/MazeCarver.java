@@ -1,116 +1,130 @@
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
-/**
- * Generates mazes using a recursive backtracking (Depth-First Search) algorithm.
- * <p>
- * This class carves paths through a {@link Grid} by randomly selecting directions
- * and recursively visiting unvisited cells. It ensures that walls remain between
- * paths by jumping two cells at a time during carving.
- */
 public class MazeCarver {
-
-    /** Tracks which cells have already been visited during maze generation. */
+    // Instance Vars
     private boolean[][] visited;
+    private Random random = new Random();
 
-    /**
-     * Carves a maze into the provided grid starting from position (1, 1).
-     * <p>
-     * After carving, the bottom-right inner cell is marked as the target.
-     *
-     * @param grid the {@link Grid} to carve the maze into
-     */
+    // --- Difficulty Settings ---
+    // Controls how many extra passages are punched through walls after carving.
+    // Higher = more loops, more paths to any point, harder to solve.
+    // 0.0 = perfect maze (no loops), 0.15 = light looping, 0.30+ = very loopy
+    private static final double EXTRA_PASSAGE_RATIO = 0.01;
+
+    // Controls how strongly the carver prefers to continue in its current direction
+    // rather than turning. Higher = longer straight/winding runs, fewer sharp turns.
+    // 1 = no bias (original behavior), 3 = moderate bias, 6+ = very biased
+    private static final int DIRECTION_CONTINUATION_WEIGHT = 4;
+
     public void carveMaze(Grid grid) {
         int rows = grid.getRows();
         int cols = grid.getCols();
 
-        // Initialize visited array to prevent revisiting cells during DFS.
         visited = new boolean[rows][cols];
 
-        // Begin recursive carving from the starting cell.
-        carveFrom(grid, 1, 1);
-
-        // Mark the target cell near the bottom-right corner.
+        // Pass null as the initial "last direction" since we have no prior direction yet
+        carveFrom(grid, 1, 1, null);
         grid.getTile(rows - 2, cols - 2).setTileType(TileType.TARGET);
+
+        // After the perfect maze is carved, punch extra holes to create loops
+        addExtraPassages(grid, rows, cols);
     }
 
-    /**
-     * Recursively carves paths from the specified cell using DFS.
-     * <p>
-     * For each direction, it checks two cells ahead. If that cell is valid and unvisited,
-     * it removes the wall between the current cell and the next cell, then recurses.
-     * This method exploits the call stack for backtracking when no valid neighbors remain.
-     *
-     * @param grid the {@link Grid} being carved
-     * @param row  the current row index
-     * @param col  the current column index
-     */
-    private void carveFrom(Grid grid, int row, int col) {
-        // Mark the current cell as visited and set it to a path.
+    private void carveFrom(Grid grid, int row, int col, int[] lastDirection) {
         visited[row][col] = true;
         grid.getTile(row, col).setTileType(TileType.PATH);
 
-        // Get a shuffled list of directions to ensure random maze generation.
-        List<int[]> directions = getShuffledDirections();
+        // Get directions biased toward continuing in lastDirection
+        List<int[]> directions = getBiasedDirections(lastDirection);
 
-        // Explore each direction. The recursion naturally backtracks via the call stack
-        // when a dead end is reached (no unvisited neighbors).
         for (int[] direction : directions) {
-            // Calculate the position two cells away in the chosen direction.
             int nextRow = row + direction[0] * 2;
             int nextCol = col + direction[1] * 2;
 
-            // Proceed only if the target cell is within bounds and unvisited.
             if (isValidCell(nextRow, nextCol, grid.getRows(), grid.getCols()) && !visited[nextRow][nextCol]) {
-
-                // Determine the wall cell between the current position and the next position.
                 int wallRow = row + direction[0];
                 int wallCol = col + direction[1];
 
-                // Remove the wall by converting it to a path.
                 grid.getTile(wallRow, wallCol).setTileType(TileType.PATH);
 
-                // Recursively carve from the next cell.
-                carveFrom(grid, nextRow, nextCol);
+                // Pass the current direction forward so the next call can bias toward it
+                carveFrom(grid, nextRow, nextCol, direction);
             }
         }
     }
 
     /**
-     * Checks if the specified cell is within the bounds of the grid.
-     *
-     * @param targetRow the row index to check
-     * @param targetCol the column index to check
-     * @param rows      the total number of rows in the grid
-     * @param cols      the total number of columns in the grid
-     * @return true if the cell is inside the grid boundaries, false otherwise
+     * After the maze is fully carved, randomly removes interior walls that sit
+     * between two PATH cells. Each removed wall creates a new loop, giving the
+     * maze multiple valid routes and making it much harder to solve at a glance.
      */
-    private boolean isValidCell(int targetRow, int targetCol, int rows, int cols) {
-        return targetRow > 0 && targetRow < rows && targetCol > 0 && targetCol < cols;
+    private void addExtraPassages(Grid grid, int rows, int cols) {
+        // Collect all interior wall tiles that separate two path cells
+        List<int[]> candidateWalls = new ArrayList<>();
+
+        // Only check odd-coordinate walls (the ones placed between carved cells)
+        for (int r = 1; r < rows - 1; r++) {
+            for (int c = 1; c < cols - 1; c++) {
+                if (grid.getTile(r, c).getTileType() != TileType.PATH) {
+                    // A wall is a valid candidate if it has PATH neighbors on both sides
+                    // along either axis (i.e., it's a wall between two open cells)
+                    boolean horizontalBridge =
+                        c - 1 >= 0 && c + 1 < cols &&
+                        grid.getTile(r, c - 1).getTileType() == TileType.PATH &&
+                        grid.getTile(r, c + 1).getTileType() == TileType.PATH;
+
+                    boolean verticalBridge =
+                        r - 1 >= 0 && r + 1 < rows &&
+                        grid.getTile(r - 1, c).getTileType() == TileType.PATH &&
+                        grid.getTile(r + 1, c).getTileType() == TileType.PATH;
+
+                    if (horizontalBridge || verticalBridge) {
+                        candidateWalls.add(new int[]{r, c});
+                    }
+                }
+            }
+        }
+
+        // Shuffle so we pick random walls, not always the top-left ones
+        Collections.shuffle(candidateWalls, random);
+
+        // Remove a percentage of them based on EXTRA_PASSAGE_RATIO
+        int toRemove = (int) (candidateWalls.size() * EXTRA_PASSAGE_RATIO);
+        for (int i = 0; i < toRemove; i++) {
+            int[] wall = candidateWalls.get(i);
+            grid.getTile(wall[0], wall[1]).setTileType(TileType.PATH);
+        }
     }
 
     /**
-     * Returns a shuffled list of the four cardinal direction deltas.
-     * <p>
-     * Each direction is represented as an int array of size 2: {rowDelta, colDelta}.
-     * Shuffling ensures randomized maze generation.
-     *
-     * @return a list of shuffled direction arrays
+     * Returns a shuffled direction list that is weighted to favor continuing
+     * in lastDirection. The current direction is added multiple times so it
+     * appears more often when the list is shuffled, making the carver more
+     * likely to keep going straight (or slightly curved) rather than turning.
      */
-    private List<int[]> getShuffledDirections() {
+    private List<int[]> getBiasedDirections(int[] lastDirection) {
         List<int[]> directions = new ArrayList<>();
 
-        // Add the four cardinal directions.
-        directions.add(new int[]{-1, 0}); // Up
-        directions.add(new int[]{1, 0});  // Down
-        directions.add(new int[]{0, -1}); // Left
-        directions.add(new int[]{0, 1});  // Right
+        directions.add(new int[]{-1, 0});
+        directions.add(new int[]{1, 0});
+        directions.add(new int[]{0, -1});
+        directions.add(new int[]{0, 1});
 
-        // Randomize the order to vary maze structure each time.
-        Collections.shuffle(directions);
+        // If we have a prior direction, add it extra times to weight it more heavily
+        if (lastDirection != null) {
+            for (int i = 0; i < DIRECTION_CONTINUATION_WEIGHT; i++) {
+                directions.add(new int[]{lastDirection[0], lastDirection[1]});
+            }
+        }
 
+        Collections.shuffle(directions, random);
         return directions;
     }
-}
 
+    private boolean isValidCell(int targetrow, int targetcol, int rows, int cols) {
+        return targetrow > 0 && targetrow < rows && targetcol > 0 && targetcol < cols;
+    }
+}
