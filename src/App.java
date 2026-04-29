@@ -23,9 +23,9 @@ public class App {
         // Infinite loop for the game menu; exits via return statements when the user chooses to quit.
         while (true) {
             System.out.println("\n=== Maze Game ===");
-            System.out.println("1. 11x11");
-            System.out.println("2. 13x13");
-            System.out.println("3. 15x15");
+            System.out.println("1. 15x15");
+            System.out.println("2. 19X19");
+            System.out.println("3. 23x23");
             System.out.println("4. Custom size");
             System.out.println("5. Quit");
             System.out.print("Choose option: ");
@@ -36,13 +36,13 @@ public class App {
             // Determine maze size based on user menu selection.
             switch (choice) {
                 case "1":
-                    size = 11;
+                    size = 15;
                     break;
                 case "2":
-                    size = 13;
+                    size = 19;
                     break;
                 case "3":
-                    size = 15;
+                    size = 23;
                     break;
                 case "4":
                     System.out.print("Enter size (odd number recommended): ");
