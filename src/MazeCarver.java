@@ -1,6 +1,8 @@
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Random;
 
 public class MazeCarver {
@@ -17,7 +19,7 @@ public class MazeCarver {
     // Controls how strongly the carver prefers to continue in its current direction
     // rather than turning. Higher = longer straight/winding runs, fewer sharp turns.
     // 1 = no bias (original behavior), 3 = moderate bias, 6+ = very biased
-    private static final int DIRECTION_CONTINUATION_WEIGHT = 4;
+    private static final int DIRECTION_CONTINUATION_WEIGHT = 5;
 
     public void carveMaze(Grid grid) {
         int rows = grid.getRows();
@@ -27,10 +29,13 @@ public class MazeCarver {
 
         // Pass null as the initial "last direction" since we have no prior direction yet
         carveFrom(grid, 1, 1, null);
-        grid.getTile(rows - 2, cols - 2).setTileType(TileType.TARGET);
 
         // After the perfect maze is carved, punch extra holes to create loops
         addExtraPassages(grid, rows, cols);
+
+        // Place target at the furthest point from start (1,1) to maximize keypresses
+        int[] furthest = findFurthestPoint(grid, 1, 1);
+        grid.getTile(furthest[0], furthest[1]).setTileType(TileType.TARGET);
     }
 
     private void carveFrom(Grid grid, int row, int col, int[] lastDirection) {
@@ -97,6 +102,70 @@ public class MazeCarver {
             int[] wall = candidateWalls.get(i);
             grid.getTile(wall[0], wall[1]).setTileType(TileType.PATH);
         }
+    }
+
+    /**
+     * Uses BFS to find the furthest path cell from the given start position.
+     * This maximizes the number of keypresses required to reach the target.
+     *
+     * @param grid the maze grid
+     * @param startRow the starting row position
+     * @param startCol the starting column position
+     * @return int[] array with [row, col] of the furthest point
+     */
+    private int[] findFurthestPoint(Grid grid, int startRow, int startCol) {
+        int rows = grid.getRows();
+        int cols = grid.getCols();
+
+        // Distance array to track distances from start
+        int[][] distance = new int[rows][cols];
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                distance[r][c] = -1;
+            }
+        }
+
+        Queue<int[]> queue = new LinkedList<>();
+        queue.add(new int[]{startRow, startCol});
+        distance[startRow][startCol] = 0;
+
+        int[] furthest = new int[]{startRow, startCol};
+        int maxDist = 0;
+
+        // BFS to compute shortest distances from start to all reachable cells
+        while (!queue.isEmpty()) {
+            int[] current = queue.poll();
+            int row = current[0];
+            int col = current[1];
+            int dist = distance[row][col];
+
+            // Check all 4 directions
+            int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
+            for (int[] dir : directions) {
+                int newRow = row + dir[0];
+                int newCol = col + dir[1];
+
+                // Check bounds and if it's a navigable path
+                if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols) {
+                    if (distance[newRow][newCol] == -1) {
+                        TileType type = grid.getTile(newRow, newCol).getTileType();
+                        if (type == TileType.PATH || type == TileType.TARGET) {
+                            distance[newRow][newCol] = dist + 1;
+                            queue.add(new int[]{newRow, newCol});
+
+                            // Update furthest point if this is farther
+                            if (dist + 1 > maxDist) {
+                                maxDist = dist + 1;
+                                furthest = new int[]{newRow, newCol};
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return furthest;
     }
 
     /**
