@@ -14,12 +14,12 @@ public class MazeCarver {
     // Controls how many extra passages are punched through walls after carving.
     // Higher = more loops, more paths to any point, harder to solve.
     // 0.0 = perfect maze (no loops), 0.15 = light looping, 0.30+ = very loopy
-    private static final double EXTRA_PASSAGE_RATIO = 0.01;
+    private static final double EXTRA_PASSAGE_RATIO = 0.02;
 
     // Controls how strongly the carver prefers to continue in its current direction
     // rather than turning. Higher = longer straight/winding runs, fewer sharp turns.
     // 1 = no bias (original behavior), 3 = moderate bias, 6+ = very biased
-    private static final int DIRECTION_CONTINUATION_WEIGHT = 5;
+    private static final int DIRECTION_CONTINUATION_WEIGHT = 1;
 
     public void carveMaze(Grid grid) {
         int rows = grid.getRows();
