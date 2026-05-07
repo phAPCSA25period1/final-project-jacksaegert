@@ -9,6 +9,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
+
 /**
  * Handles keyboard input and real-time console rendering for player movement.
  * <p>
@@ -31,6 +32,10 @@ public class MovementEngine implements KeyListener {
 
     /** Reference to the player whose movement is being controlled. */
     private Player player;
+
+    /** Swing display/renderer for maze + player animation. */
+    private Display display;
+
 
     /**
      * Constructs a new MovementEngine with listening initially disabled.
@@ -86,9 +91,13 @@ public class MovementEngine implements KeyListener {
             });
         });
 
-        // Initial render of the maze.
-        clearScreen();
-        render();
+        // Create Swing display + initial render.
+        display = new Display();
+        display.show(grid, player);
+
+        // Initial render (visual only; no console clear needed).
+        display.renderNow();
+
 
         // Block until the user quits movement.
         try {
@@ -144,29 +153,25 @@ public class MovementEngine implements KeyListener {
         // Map key presses to player movement or quit action.
         switch (keyCode) {
             case KeyEvent.VK_W:
-                moved = player.moveUp();
+                moved = tryMoveAndAnimate(-1, 0);
                 break;
             case KeyEvent.VK_A:
-                moved = player.moveLeft();
+                moved = tryMoveAndAnimate(0, -1);
                 break;
             case KeyEvent.VK_S:
-                moved = player.moveDown();
+                moved = tryMoveAndAnimate(1, 0);
                 break;
             case KeyEvent.VK_D:
-                moved = player.moveRight();
+                moved = tryMoveAndAnimate(0, 1);
                 break;
+
             case KeyEvent.VK_Q:
                 stopListening();
                 return;
         }
 
-        // Re-render the maze if the player successfully moved.
-        if (moved) {
-            clearScreen();
-            render();
-        }
-
         // Check for win condition after each move.
+
         if (player.checkWin()) {
             System.out.println("Congratulations! You Win! \n");
             stopListening();
@@ -192,7 +197,40 @@ public class MovementEngine implements KeyListener {
     }
 
     /**
+     * Attempts a move by deltas; animates if move succeeded.
+     * <p>
+     * @param dRow delta row (up=-1, down=+1)
+     * @param dCol delta col (left=-1, right=+1)
+     */
+    private boolean tryMoveAndAnimate(int dRow, int dCol) {
+        int prevRow = player.getRow();
+        int prevCol = player.getCol();
+
+        boolean moved;
+        if (dRow == 0 && dCol == -1) {
+            moved = player.moveLeft();
+        } else if (dRow == 0 && dCol == 1) {
+            moved = player.moveRight();
+        } else if (dRow == -1 && dCol == 0) {
+            moved = player.moveUp();
+        } else if (dRow == 1 && dCol == 0) {
+            moved = player.moveDown();
+        } else {
+            moved = false;
+        }
+
+        if (moved) {
+            int toRow = player.getRow();
+            int toCol = player.getCol();
+            display.animatePlayerMove(prevRow, prevCol, toRow, toCol);
+        }
+
+        return moved;
+    }
+
+    /**
      * Renders the current state of the maze to the console.
+
      * <p>
      * The player is displayed as '@', paths as spaces, walls as '#', and the target as '+'.
      */
