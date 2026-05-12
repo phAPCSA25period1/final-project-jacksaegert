@@ -1,189 +1,147 @@
-[![Open in Codespaces](https://classroom.github.com/assets/launch-codespace-2972f46106e565e64193e422d61a12cf1da4916b45550586e14ef0a7c637dd04.svg)](https://classroom.github.com/open-in-codespaces?assignment_repo_id=23508266)
-# AP Computer Science A – Final Project
-## Software & Systems Development Capstone
+# Micromaze
 
-Welcome to your **Final Project repository**.
+Micromaze is a lightweight Java maze-generation and navigation project built around procedural maze carving, grid-based movement, and a simple rendering system.
 
-This repository will hold:
-- Your complete Java project
-- Your project journal and planning artifacts
-- Your final, working software product
-
-This is not just an assignment — it is a **capstone software project**.
+The project focuses on clean object-oriented structure and separation of responsibilities: maze generation, rendering, movement, and grid management are all handled independently.
 
 ---
 
-## 📌 Project Overview (Read Carefully)
+## Features
 
-In this project, you will:
-- Design and build a **real piece of software**
-- Solve **one real problem** for **one clearly defined user**
-- Work using **agile development**
-- Show evidence of **professional software practices**
-- Use AI responsibly as a planning and support tool
-
-You will leave this course with something you can confidently say:
-
-> “I built this software.”
+* Procedurally generated mazes
+* Recursive maze carving system
+* Randomized extra passages for less predictable layouts
+* Grid-based player movement
+* Keyboard navigation
+* Swing-based rendering and animation
+* Modular architecture for easy expansion
 
 ---
 
-## 🔁 Required Workflow (How You Must Work)
+## Project Structure
 
-### ✅ Daily GitHub Commits (Required)
-You are expected to:
-- Make **at least one meaningful commit every class day**
-- Write **descriptive commit messages** that explain:
-  - What you changed
-  - Why you changed it
-  - What goal it supports
+### Core Classes
 
-✅ Good commit messages:
-- `Sprint 1: Created Player class and tested constructor`
-- `Sprint 2: Implemented 2D map and verified movement logic`
-
-🚫 Poor commit messages:
-- `updates`
-- `stuff`
-- `final version`
-
-Your commit history is **evidence of your thinking and progress**.
+| Class            | Responsibility                                           |
+| ---------------- | -------------------------------------------------------- |
+| `App`            | Entry point of the application                           |
+| `Grid`           | Stores and manages the maze tiles                        |
+| `Tile`           | Represents a single cell in the maze                     |
+| `TileType`       | Enum describing tile behavior (`WALL`, `PATH`, `TARGET`) |
+| `MazeCarver`     | Generates the maze layout                                |
+| `Player`         | Handles player position and movement validation          |
+| `MovementEngine` | Processes keyboard input and movement logic              |
+| `Display`        | Renders the maze and player to the screen                |
 
 ---
 
-## 🔁 Agile Development & Sprints
+## How It Works
 
-You will complete **4 sprints**.  
-Each sprint includes:
-- Planning
-- Building
-- Testing
-- Feedback and reflection
+### Maze Generation
 
-Each sprint ends with:
-- A sprint grade
-- A sprint reflection
-- Feedback exchanged with peers
+The `MazeCarver` class builds the maze recursively using directional carving and weighted continuation logic. The generator also adds occasional extra passages to avoid overly linear paths.
 
-🚫 You may NOT complete multiple sprints at once.  
-✅ Each sprint grade is **final**.
+Once the maze is complete, the algorithm finds a distant endpoint and marks it as the target tile.
 
----
+### Player Navigation
 
-## 🧪 Testing Expectations
+The `Player` class validates movement against the grid, preventing movement into walls while allowing traversal across valid paths.
 
-Testing is required every sprint.
+The `MovementEngine` listens for keyboard input and coordinates movement animations through the `Display` system.
 
-✅ Testing may include:
-- Running the program with different inputs
-- Print‑based testing
-- Driver program testing
-- Verifying logic and edge cases
+### Rendering
 
-You should be able to explain:
-- What you tested
-- How you tested it
-- What you discovered or fixed
+Rendering is handled using Java Swing. The `Display` class manages:
+
+* Drawing the maze
+* Rendering the player
+* Movement animations
+* Window lifecycle
 
 ---
 
-## 🗂️ Required Project Components
+## Controls
 
-Your final project must include:
-
-- ✅ Multiple interacting Java classes
-- ✅ Encapsulation (`private` fields, appropriate getters/setters)
-- ✅ Arrays and/or ArrayLists
-- ✅ A purposeful **2D array**
-- ✅ A working driver program (`main`)
-- ✅ A class diagram matching your final code
-- ✅ Clear documentation
-- ✅ A program that runs and works
-
-Inheritance and interfaces are optional but encouraged.
+| Key       | Action     |
+| --------- | ---------- |
+| `W` / `↑` | Move Up    |
+| `S` / `↓` | Move Down  |
+| `A` / `←` | Move Left  |
+| `D` / `→` | Move Right |
 
 ---
 
-## 🤖 Using AI (Allowed, With Responsibility)
+## Running the Project
 
-You may use AI to:
-- Organize ideas
-- Plan sprints
-- Debug code
-- Suggest design improvements
+### Requirements
 
-You must:
-- Document how you used AI
-- Review and evaluate AI suggestions
-- Understand and explain your final code
+* Java 17+ (recommended)
+* Any Java IDE or command-line compiler
 
-AI should act like:
-> A junior developer you supervise — not something that builds the project for you.
+### Compile
 
----
+```bash
+javac *.java
+```
 
-## 📘 Project Journal
+### Run
 
-All planning, work logs, testing notes, and reflections live in **your project journal**.
-
-If it happened during this project, it should be documented there.
+```bash
+java App
+```
 
 ---
 
-## ✅ Final Submission Expectations
+## Design Goals
 
-By the end of the project:
-- Your program should run reliably
-- Your technical requirements should be met
-- Your code should be readable and organized
-- Your repository should look **professional**
+Micromaze was built with a few core goals in mind:
 
----
-
-# ✨ Final Step: README Update (Very Important)
-
-When your project is complete, you must **rewrite this README**  
-so it reflects **your software**, not the assignment.
-
-Your final README should include:
+* Keep the codebase readable and modular
+* Separate gameplay systems cleanly
+* Make maze-generation logic easy to tweak and experiment with
+* Provide a foundation for future features
 
 ---
 
-## 🔹 Project Title
+## Possible Future Improvements
 
-## 🔹 What This Software Does
-Explain your project in plain language.
+Some ideas that could be added later:
 
-## 🔹 Who It’s For
-Describe the user and the problem being solved.
-
-## 🔹 How to Run the Program
-Clear steps so someone else can run your project.
-
-## 🔹 Technical Overview
-Brief description of:
-- Main classes
-- Key data structures
-- Program logic
-
-## 🔹 Class Diagram
-Include or link your final class diagram.
-
-## 🔹 Known Limitations / Future Improvements
-What works well, and what you would improve with more time.
+* Difficulty settings
+* Timed runs
+* Enemy AI
+* Fog-of-war rendering
+* Multiple maze-generation algorithms
+* Saving/loading mazes
+* Sound effects and music
+* Better UI and menus
+* Procedural themes or tile sets
 
 ---
 
-## 🎯 Final Reminder
+## UML Overview
 
-This repository represents **you as a developer**.
+The project architecture follows a relatively straightforward dependency flow:
 
-Take pride in:
-- Your process
-- Your commits
-- Your code
-- Your documentation
+```text
+App
+ ├── Grid
+ ├── MazeCarver
+ ├── Player
+ └── MovementEngine
+        └── Display
+```
 
-Build something real.  
-Build it thoughtfully.  
-Build it well.
+The grid acts as the shared world state while movement, rendering, and generation remain decoupled.
+
+---
+
+## License
+
+This project is open for educational and personal use.
+
+---
+
+## Notes
+
+Micromaze is intentionally small in scope. The goal is not to be a full game engine, but a compact and extensible project for experimenting with procedural generation, rendering systems, and game architecture in Java.
