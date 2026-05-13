@@ -123,13 +123,81 @@ Some ideas that could be added later:
 
 The project architecture follows a relatively straightforward dependency flow:
 
-```text
-App
- ├── Grid
- ├── MazeCarver
- ├── Player
- └── MovementEngine
-        └── Display
+```mermaid
+classDiagram
+    class App {
+        +main(args: String[]) void
+    }
+    class Grid {
+        -grid: Tile[][]
+        +getTile(row, col) Tile
+        +setTile(row, col, tile) void
+        +getRows() int
+        +getCols() int
+    }
+    class Tile {
+        -type: TileType
+        +getTileType() TileType
+        +setTileType(t) void
+    }
+    class TileType {
+        <<enumeration>>
+        WALL
+        PATH
+        TARGET
+    }
+    class MazeCarver {
+        -visited: boolean[][]
+        -random: Random
+        +carveMaze(grid) void
+        -carveFrom(grid, row, col, dir) void
+        -addExtraPassages(grid, rows, cols) void
+        -findFurthestPoint(grid, startRow, startCol) int[]
+        -getBiasedDirections(lastDir) List
+    }
+    class Player {
+        -row: int
+        -col: int
+        -grid: Grid
+        +moveUp() boolean
+        +moveDown() boolean
+        +moveLeft() boolean
+        +moveRight() boolean
+        +checkWin() boolean
+        +getRow() int
+        +getCol() int
+    }
+    class MovementEngine {
+        -listening: boolean
+        -grid: Grid
+        -player: Player
+        -display: Display
+        +startNavigation(grid, player) void
+        +keyPressed(e) void
+        -tryMoveAndAnimate(dRow, dCol) boolean
+    }
+    class Display {
+        -frame: JFrame
+        -panel: MazePanel
+        -cellSize: int
+        -animDurationMs: int
+        +show(grid, player) void
+        +animatePlayerMove(fromR, fromC, toR, toC) void
+        +renderNow() void
+        +close() void
+    }
+
+    App --> Grid : creates
+    App --> MazeCarver : creates
+    App --> Player : creates
+    App --> MovementEngine : creates
+    Grid "1" *-- "many" Tile : contains
+    Tile --> TileType : uses
+    MazeCarver --> Grid : carves
+    Player --> Grid : navigates
+    MovementEngine --> Player : controls
+    MovementEngine --> Grid : reads
+    MovementEngine --> Display : owns
 ```
 
 The grid acts as the shared world state while movement, rendering, and generation remain decoupled.
