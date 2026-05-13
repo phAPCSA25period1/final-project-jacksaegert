@@ -2,7 +2,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -53,9 +52,25 @@ public class MovementEngine implements KeyListener {
      * @param player the {@link Player} object to control
      */
     public void startNavigation(Grid grid, Player player) {
+        startNavigation(grid, player, false);
+    }
+
+    /**
+     * Starts navigation either with Swing (default) or without any GUI when noGui is true.
+     *
+     * @param grid   the {@link Grid} representing the current maze
+     * @param player the {@link Player} object to control
+     * @param noGui  when true, no Swing windows are created and movement input is handled via CLI (System.in)
+     */
+    public void startNavigation(Grid grid, Player player, boolean noGui) {
         this.grid = grid;
         this.player = player;
         this.listening = true;
+
+        if (noGui) {
+            runConsoleNavigation();
+            return;
+        }
 
         // Create and display a Swing window to capture keyboard input.
         SwingUtilities.invokeLater(() -> {
@@ -98,7 +113,6 @@ public class MovementEngine implements KeyListener {
         // Initial render (visual only; no console clear needed).
         display.renderNow();
 
-
         // Block until the user quits movement.
         try {
             while (listening) {
@@ -115,6 +129,67 @@ public class MovementEngine implements KeyListener {
             }
         });
     }
+
+    /**
+     * Console-only navigation loop (no Swing windows, no KeyListeners).
+     */
+    private void runConsoleNavigation() {
+        // Initial render to console.
+        clearScreen();
+        render();
+
+        java.util.Scanner scanner = new java.util.Scanner(System.in);
+        while (listening) {
+            System.out.print("\nMove (W/A/S/D) or Q to quit: ");
+            String line;
+            try {
+                line = scanner.nextLine();
+            } catch (Exception ex) {
+                stopListening();
+                break;
+            }
+
+            if (line == null || line.isEmpty()) {
+                continue;
+            }
+
+            char ch = Character.toUpperCase(line.trim().charAt(0));
+            int prevRow = player.getRow();
+            int prevCol = player.getCol();
+
+            boolean moved;
+            switch (ch) {
+                case 'W':
+                    moved = player.moveUp();
+                    break;
+                case 'A':
+                    moved = player.moveLeft();
+                    break;
+                case 'S':
+                    moved = player.moveDown();
+                    break;
+                case 'D':
+                    moved = player.moveRight();
+                    break;
+                case 'Q':
+                    stopListening();
+                    continue;
+                default:
+                    moved = false;
+            }
+
+            if (moved) {
+                clearScreen();
+                render();
+            }
+
+            if (player.checkWin()) {
+                System.out.println("Congratulations! You Win!\n");
+                stopListening();
+            }
+        }
+    }
+
 
     /**
      * Signals the engine to stop listening for keyboard input.

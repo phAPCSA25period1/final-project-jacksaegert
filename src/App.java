@@ -15,10 +15,18 @@ public class App {
      * Presents a menu for selecting maze dimensions, generates a maze,
      * initializes the player and movement engine, and handles replay logic.
      *
-     * @param args command-line arguments (not used)
+     * @param args command-line arguments. Supports --nogui to disable Swing windows.
      */
     public static void main(String[] args) {
+        boolean noGui = false;
+        for (String arg : args) {
+            if (arg != null && arg.equalsIgnoreCase("--nogui")) {
+                noGui = true;
+            }
+        }
+
         Scanner scanner = new Scanner(System.in);
+
 
         // Infinite loop for the game menu; exits via return statements when the user chooses to quit.
         while (true) {
@@ -90,8 +98,14 @@ public class App {
             // Initialize the player at the starting position and start the movement engine.
             Player player = new Player(grid, 1, 1);
             MovementEngine engine = new MovementEngine();
-            System.out.println("Player at (1,1). Use WASD to move (focus console), Q to quit movement.");
-            engine.startNavigation(grid, player);
+            if (noGui) {
+                System.out.println("Player at (1,1). Use WASD to move in console, Q to quit movement.");
+                engine.startNavigation(grid, player, true);
+            } else {
+                System.out.println("Player at (1,1). Use WASD to move (focus window), Q to quit movement.");
+                engine.startNavigation(grid, player);
+            }
+
 
             // Ask the user if they want to generate another maze.
             System.out.print("\nGenerate another? (y/n): ");
