@@ -17,6 +17,7 @@ public class App {
      *
      * @param args command-line arguments. Supports --nogui to disable Swing windows.
      */
+    //This comment is here to indicate the project is done!
     public static void main(String[] args) {
         boolean noGui = false;
         for (String arg : args) {
